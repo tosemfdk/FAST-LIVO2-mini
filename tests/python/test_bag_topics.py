@@ -31,6 +31,19 @@ class BagTopicTests(unittest.TestCase):
         self.assertEqual(selection.imu_topic, "/imu/data")
         self.assertEqual(selection.lidar_topic, "/livox/lidar")
 
+    def test_select_topics_accepts_ros2_type_names(self) -> None:
+        selection = select_topics_from_info(
+            {
+                "/camera/camera/color/image_raw/compressed": TopicInfo("sensor_msgs/msg/CompressedImage"),
+                "/livox/imu": TopicInfo("sensor_msgs/msg/Imu"),
+                "/livox/lidar": TopicInfo("sensor_msgs/msg/PointCloud2"),
+            }
+        )
+        self.assertEqual(selection.image_topic, "/camera/camera/color/image_raw/compressed")
+        self.assertEqual(selection.image_transport, "compressed")
+        self.assertEqual(selection.imu_topic, "/livox/imu")
+        self.assertEqual(selection.lidar_topic, "/livox/lidar")
+
 
 if __name__ == "__main__":
     unittest.main()
