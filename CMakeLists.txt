@@ -23,6 +23,7 @@ if(FASTLIVO_BUILD_PORTABLE_CORE)
     src/core/portable_livo_core.cpp
     src/core/vendor_conversions.cpp
     src/core/portable_livmapper_adapter.cpp
+    src/core/replay_sequence.cpp
   )
   target_include_directories(fastlivo_port_core
     PUBLIC

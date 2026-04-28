@@ -12,11 +12,17 @@ from .sequence import SequenceStats, read_sequence
 class ReplayVerificationResult:
     stats: SequenceStats
     runner_used: str
+    backend: str
     odometry_output: Path
     stdout: str
 
 
-def verify_sequence(sequence: str | Path, runner: str | Path | None = None, odometry_out: str | Path | None = None) -> ReplayVerificationResult:
+def verify_sequence(
+    sequence: str | Path,
+    runner: str | Path | None = None,
+    odometry_out: str | Path | None = None,
+    backend: str = "portable-core",
+) -> ReplayVerificationResult:
     sequence_path = Path(sequence)
     _, stats = read_sequence(sequence_path)
     if stats.imu_count == 0 or stats.image_count == 0 or stats.lidar_count == 0 or not stats.saw_end:
@@ -31,9 +37,15 @@ def verify_sequence(sequence: str | Path, runner: str | Path | None = None, odom
 
     odom_path = Path(odometry_out) if odometry_out else sequence_path.with_suffix(".odometry.csv")
     completed = subprocess.run(
-        [str(runner_path), "--sequence", str(sequence_path), "--odometry-out", str(odom_path)],
+        [str(runner_path), "--sequence", str(sequence_path), "--backend", backend, "--odometry-out", str(odom_path)],
         check=True,
         capture_output=True,
         text=True,
     )
-    return ReplayVerificationResult(stats=stats, runner_used=str(runner_path), odometry_output=odom_path, stdout=completed.stdout.strip())
+    return ReplayVerificationResult(
+        stats=stats,
+        runner_used=str(runner_path),
+        backend=backend,
+        odometry_output=odom_path,
+        stdout=completed.stdout.strip(),
+    )

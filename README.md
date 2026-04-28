@@ -9,10 +9,13 @@ This scaffold now also includes a **vendor-shim conversion layer** so portable r
 This repo now contains:
 
 - a **ROS-free portable runtime skeleton** for LiDAR + IMU + camera replay validation
+- a **vendor-shim callback adapter** (`PortableLIVMapperAdapter`) that preserves the future `LIVMapper`-style integration boundary without requiring ROS in the smoke path
 - a root **CMake** entrypoint for local smoke builds
 - a root **uv** project scaffold for Python-side conversion / replay tooling
 - offline **rosbag -> sequence** conversion utilities (minimal ROS install allowed for this step only)
 - replay verification tooling that checks a sequence can be fully consumed and emits local odometry CSV output
+
+The default build still uses the portable scaffold/runtime for smoke validation. It does **not** link the full upstream FAST-LIVO2 runtime yet; instead it keeps the replay-first path and the vendor-shaped callback boundary stable while the real core integration work continues.
 
 ## Quickstart
 
@@ -24,20 +27,7 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-### 2. Verify the synthetic smoke fixture
-
-```bash
-python3 scripts/verify_sequence.py --sequence tests/fixtures/smoke_sequence.seq
-python3 scripts/run_replay.py --sequence tests/fixtures/smoke_sequence.seq --runner build/fastlivo_replay_runner
-```
-
-You can also validate the callback-style compatibility lane that mimics the future `LIVMapper` adapter boundary:
-
-```bash
-./build/fastlivo_vendor_shim_replay --sequence tests/fixtures/smoke_sequence.seq
-```
-
-### 3. Bootstrap uv tooling
+### 2. Bootstrap uv tooling
 
 ```bash
 uv sync
@@ -49,12 +39,39 @@ If you want the local vendored DimOS package available through uv, install the o
 uv sync --extra robotics
 ```
 
+### 3. Verify the synthetic smoke fixture
+
+Use the uv-managed interpreter so the replay tooling runs with the repo's Python 3.11+ requirement even if the system `python3` is older:
+
+```bash
+uv run python scripts/verify_sequence.py --sequence tests/fixtures/smoke_sequence.seq
+uv run python scripts/run_replay.py --sequence tests/fixtures/smoke_sequence.seq --runner build/fastlivo_replay_runner
+uv run python -m unittest discover -s tests/python
+```
+
+You can also validate the callback-style compatibility lane that mimics the future `LIVMapper` adapter boundary:
+
+```bash
+./build/fastlivo_vendor_shim_replay --sequence tests/fixtures/smoke_sequence.seq
+```
+
+## Replay smoke coverage
+
+Today the replay smoke lane verifies:
+
+- the sequence file contains IMU + image + lidar records and a terminal `END`
+- synchronized measures can be rebuilt from the replay fixture
+- the portable replay runner consumes the full sequence and emits odometry CSV
+- the vendor-shaped callback shim still accepts replayed records through `imu_cbk`, `img_cbk`, and `standard_pcl_cbk`
+
+This gives a stable offline validation path while the real FAST-LIVO2 core wiring remains in progress.
+
 ## Rosbag conversion
 
 Your bag is expected to use **compressed image transport**. Convert it with:
 
 ```bash
-python3 scripts/rosbag_to_dimos.py \
+uv run python scripts/rosbag_to_dimos.py \
   --bag /path/to/file.bag \
   --output-dir replay/my-sequence \
   --image-topic /camera/image/compressed \
@@ -68,19 +85,19 @@ This conversion path is intentionally **offline-only**. A minimal ROS install is
 You can also project a converted sequence into DimOS-oriented topic events for inspection:
 
 ```bash
-python3 scripts/sequence_to_dimos.py --sequence replay/my-sequence/sequence.seq --output replay/my-sequence/dimos-events.json
+uv run python scripts/sequence_to_dimos.py --sequence replay/my-sequence/sequence.seq --output replay/my-sequence/dimos-events.json
 ```
 
 Inspect synchronized measure windows before connecting the real FAST-LIVO2 core:
 
 ```bash
-python3 scripts/inspect_measures.py --sequence replay/my-sequence/sequence.seq --output replay/my-sequence/measures.json
+uv run python scripts/inspect_measures.py --sequence replay/my-sequence/sequence.seq --output replay/my-sequence/measures.json
 ```
 
 Or run the whole offline replay pipeline in one command once the rosbag is present:
 
 ```bash
-python3 scripts/full_replay_pipeline.py --bag /path/to/file.bag --replay-dir replay/my-sequence --runner build/fastlivo_replay_runner
+uv run python scripts/full_replay_pipeline.py --bag /path/to/file.bag --replay-dir replay/my-sequence --runner build/fastlivo_replay_runner
 ```
 
 ## Planning artifacts

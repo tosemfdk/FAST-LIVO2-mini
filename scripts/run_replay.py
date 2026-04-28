@@ -15,10 +15,16 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Run replay-first validation for the portable FAST-LIVO2 scaffold")
     parser.add_argument("--sequence", required=True, help="Path to a .seq replay file")
     parser.add_argument("--runner", help="Path to fastlivo_replay_runner")
+    parser.add_argument(
+        "--backend",
+        default="portable-core",
+        choices=["portable-core", "livmapper-adapter"],
+        help="Replay backend inside fastlivo_replay_runner",
+    )
     parser.add_argument("--odometry-out", help="Optional output CSV path")
     args = parser.parse_args()
 
-    result = verify_sequence(args.sequence, runner=args.runner, odometry_out=args.odometry_out)
+    result = verify_sequence(args.sequence, runner=args.runner, odometry_out=args.odometry_out, backend=args.backend)
     print(result.stdout)
     print(f"odometry_output={result.odometry_output}")
     return 0

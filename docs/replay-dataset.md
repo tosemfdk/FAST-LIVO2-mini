@@ -15,7 +15,7 @@ The primary validation dataset is a user-provided rosbag hosted outside the repo
 ## Example
 
 ```bash
-python3 scripts/rosbag_to_dimos.py \
+uv run python scripts/rosbag_to_dimos.py \
   --bag ~/Downloads/my_capture.bag \
   --output-dir replay/my_capture \
   --image-topic /camera/image/compressed \

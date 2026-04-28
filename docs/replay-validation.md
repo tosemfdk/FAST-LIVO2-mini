@@ -29,9 +29,20 @@ Metadata emitted by `scripts/rosbag_to_dimos.py` for auditability.
 ## Commands
 
 ```bash
-python3 scripts/verify_sequence.py --sequence replay/example/sequence.seq
-python3 scripts/run_replay.py --sequence replay/example/sequence.seq --runner build/fastlivo_replay_runner
+uv run python scripts/verify_sequence.py --sequence replay/example/sequence.seq
+uv run python scripts/run_replay.py --sequence replay/example/sequence.seq --runner build/fastlivo_replay_runner
+uv run python -m unittest discover -s tests/python
+./build/fastlivo_vendor_shim_replay --sequence tests/fixtures/smoke_sequence.seq
 ```
+
+## Current integration boundary
+
+Replay validation currently covers two offline lanes:
+
+1. `fastlivo_replay_runner` drives the portable scaffold directly and must consume the full sequence while emitting odometry output.
+2. `fastlivo_vendor_shim_replay` pushes the same fixture through the vendor-shaped callback boundary (`imu_cbk`, `img_cbk`, `standard_pcl_cbk`) so the future FAST-LIVO2 core handoff can keep the same ingress shape.
+
+This means replay smoke stays green even before the full upstream FAST-LIVO2 runtime is linked into the default build.
 
 ## Google Drive rosbag note
 
