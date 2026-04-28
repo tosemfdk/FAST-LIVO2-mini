@@ -1,0 +1,17 @@
+[project]
+name = "fast-livo2-mini"
+version = "0.1.0"
+description = "Replay-first Mac mini / DimOS porting scaffold for FAST-LIVO2"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+robotics = ["dimos"]
+
+[tool.uv.sources]
+dimos = { path = "src/thirdparty/dimos", editable = true }
+
+[tool.uv]
+package = false
+

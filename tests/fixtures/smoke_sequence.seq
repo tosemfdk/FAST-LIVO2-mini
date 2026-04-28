@@ -1,0 +1,8 @@
+# synthetic LiDAR + IMU + compressed image smoke fixture
+IMU 0.000000000 imu 0.0 0.0 9.8 0.01 0.02 0.03
+IMAGE 0.010000000 camera compressed 640 480 2048
+LIDAR 0.020000000 lidar 120
+IMU 0.030000000 imu 0.1 0.0 9.7 0.01 0.02 0.04
+IMAGE 0.040000000 camera compressed 640 480 2052
+LIDAR 0.050000000 lidar 118
+END 0.060000000
