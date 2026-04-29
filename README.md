@@ -39,6 +39,12 @@ If you want the local vendored DimOS package available through uv, install the o
 uv sync --extra robotics
 ```
 
+If you want the ROS2 bag -> DimOS LCM bridge helpers available, install the bridge extra as well:
+
+```bash
+uv sync --extra dimos-bridge
+```
+
 ### 3. Verify the synthetic smoke fixture
 
 Use the uv-managed interpreter so the replay tooling runs with the repo's Python 3.11+ requirement even if the system `python3` is older:
@@ -99,6 +105,20 @@ Or run the whole offline replay pipeline in one command once the rosbag is prese
 ```bash
 uv run python scripts/full_replay_pipeline.py --bag /path/to/file.bag --replay-dir replay/my-sequence --runner build/fastlivo_replay_runner
 ```
+
+## DimOS LCM bridge
+
+For ROS2 rosbag2 sqlite3 recordings (`.db3` + `metadata.yaml`), you can publish the bag directly onto DimOS-style LCM channels:
+
+```bash
+python3 scripts/play_dimos_lcm.py \
+  --bag replay/drive_4_28_handheld/4_28_handheld_0.db3 \
+  --lcm-url memq:// \
+  --max-messages 120
+```
+
+- `memq://` is useful for in-process smoke tests.
+- For real interprocess playback, pass a working `udpm://...` LCM URL in an environment where multicast routing is available.
 
 ## Planning artifacts
 

@@ -8,10 +8,10 @@ dependencies = []
 
 [project.optional-dependencies]
 robotics = ["dimos"]
+dimos-bridge = ["rosbags", "PyYAML", "dimos-lcm", "lcm", "reactivex"]
 
 [tool.uv.sources]
 dimos = { path = "src/thirdparty/dimos", editable = true }
 
 [tool.uv]
 package = false
-
